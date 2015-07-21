@@ -32,7 +32,7 @@ compileJava {
 
 // Copy the current srgs to the build dir so the user doesn't have to go hunting for them
 task copySrgs(type: Copy, dependsOn: 'genSrgs') {
-    from minecraftPlugin.delayedFile('{SRG_DIR}')
+    from minecraftPlugin.delayedFile("$Constants.DIR_MCP_MAPPINGS/srgs")
 
     include '**/*.srg'
     into 'build/srgs'
@@ -43,7 +43,7 @@ setupDevWorkspace.dependsOn copySrgs
 compileJava.dependsOn copySrgs
 
 // Configure reobfuscation for mixins
-reobf.doFirst {
+reobfJar.doFirst {
     if (project.mixinSrg.exists()) {
         addExtraSrgFile project.mixinSrg
     }
