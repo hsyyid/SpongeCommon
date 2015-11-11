@@ -33,6 +33,7 @@ import org.spongepowered.api.data.manipulator.immutable.item.ImmutableMapItemDat
 import org.spongepowered.api.data.manipulator.mutable.item.MapItemData;
 import org.spongepowered.api.data.value.mutable.ListValue;
 import org.spongepowered.api.data.value.mutable.Value;
+import org.spongepowered.common.data.manipulator.immutable.item.ImmutableSpongeMapItemData;
 import org.spongepowered.common.data.manipulator.mutable.common.AbstractData;
 import org.spongepowered.common.data.value.mutable.SpongeListValue;
 import org.spongepowered.common.data.value.mutable.SpongeValue;
@@ -97,7 +98,7 @@ public class SpongeMapItemData extends AbstractData<MapItemData, ImmutableMapIte
 
     @Override
     public ImmutableMapItemData asImmutable() {
-        return new ImmutableSpongeMapItemData(this.xCenter, this.zCenter, this.dimensionId, this.scale, this.visiblePlayers);
+        return new ImmutableSpongeMapItemData(this.xCenter, this.zCenter, this.dimensionId, this.scale, this.visiblePlayers, this.colors);
     }
 
     @Override
@@ -113,12 +114,12 @@ public class SpongeMapItemData extends AbstractData<MapItemData, ImmutableMapIte
     @Override
     public DataContainer toContainer() {
         return new MemoryDataContainer()
-            .set(Keys.MAP_SCALE, this.scale)
-            .set(Keys.MAP_DIMENSION, this.dimensionId)
-            .set(Keys.MAP_VISIBLE_PLAYERS, this.visiblePlayers)
-            .set(Keys.MAP_XCENTER, this.xCenter)
-            .set(Keys.MAP_ZCENTER, this.zCenter)
-            .set(Keys.MAP_COLORS, this.colors);
+                .set(Keys.MAP_SCALE, this.scale)
+                .set(Keys.MAP_DIMENSION, this.dimensionId)
+                .set(Keys.MAP_VISIBLE_PLAYERS, this.visiblePlayers)
+                .set(Keys.MAP_XCENTER, this.xCenter)
+                .set(Keys.MAP_ZCENTER, this.zCenter)
+                .set(Keys.MAP_COLORS, this.colors);
     }
 
     @Override
