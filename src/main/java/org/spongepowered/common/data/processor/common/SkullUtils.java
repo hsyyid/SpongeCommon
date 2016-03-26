@@ -25,22 +25,23 @@
 package org.spongepowered.common.data.processor.common;
 
 import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.ListenableFuture;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntitySkull;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.data.type.SkullType;
 import org.spongepowered.api.data.type.SkullTypes;
+import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.profile.GameProfileManager;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.data.manipulator.mutable.SpongeRepresentedPlayerData;
 import org.spongepowered.common.data.util.NbtDataUtil;
+import org.spongepowered.common.interfaces.block.tile.IMixinTileEntitySkull;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
@@ -125,8 +126,8 @@ public class SkullUtils {
         }
         // Skulls need a name in order to properly display -> resolve if no name is contained in the given profile
         final GameProfileManager resolver = Sponge.getGame().getServer().getGameProfileManager();
-        if (profile.getName() == null || profile.getName().isEmpty()) {
-            final ListenableFuture<GameProfile> future = resolver.get(profile.getUniqueId());
+        if (!profile.getName().isPresent() || profile.getName().get().isEmpty()) {
+            final CompletableFuture<GameProfile> future = resolver.get(profile.getUniqueId());
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {
@@ -134,7 +135,7 @@ public class SkullUtils {
                 return null;
             }
         } else if (profile.getUniqueId() == null) {
-            final ListenableFuture<GameProfile> future = resolver.get(profile.getName());
+            final CompletableFuture<GameProfile> future = resolver.get(profile.getName().get());
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {
@@ -146,4 +147,25 @@ public class SkullUtils {
         }
     }
 
+    public static void updatePlayerProfile(IMixinTileEntitySkull skull) {
+        GameProfile profile = (GameProfile) skull.getPlayerProfile();
+        if (profile != null && profile.getName().isPresent() && !profile.getName().get().isEmpty()) {
+            if (profile.isFilled() && profile.getPropertyMap().containsKey("textures")) {
+                skull.markDirty();
+            } else {
+                Sponge.getServer().getGameProfileManager().get(profile.getName().get()).handle((newProfile, thrown) -> {
+                    if (newProfile != null) {
+                        skull.setPlayerProfile((com.mojang.authlib.GameProfile) newProfile, false);
+                        skull.markDirty();
+                    } else {
+                        SpongeImpl.getLogger().warn("Could not update player GameProfile for Skull: ",
+                                thrown.getMessage());
+                    }
+                    return newProfile;
+                });
+            }
+        } else {
+            skull.markDirty();
+        }
+    }
 }

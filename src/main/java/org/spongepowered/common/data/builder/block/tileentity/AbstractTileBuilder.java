@@ -55,10 +55,10 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.Queries;
-import org.spongepowered.api.util.persistence.DataBuilder;
-import org.spongepowered.api.util.persistence.InvalidDataException;
+import org.spongepowered.api.data.persistence.DataBuilder;
+import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.world.World;
-import org.spongepowered.common.data.builder.AbstractDataBuilder;
+import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.common.data.util.DataQueries;
 
 import java.util.Map;

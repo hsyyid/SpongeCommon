@@ -25,6 +25,7 @@
 package org.spongepowered.common.mixin.core.world.gen;
 
 import com.flowpowered.math.GenericMath;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderHell;
@@ -39,14 +40,20 @@ import org.spongepowered.api.world.gen.WorldGenerator;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.common.interfaces.world.gen.IPopulatorProvider;
+import org.spongepowered.common.util.StaticMixinHelper;
 import org.spongepowered.common.util.gen.ChunkBufferPrimer;
 
+import java.util.List;
 import java.util.Random;
 
 @Mixin(ChunkProviderHell.class)
 public abstract class MixinChunkProviderHell implements IChunkProvider, GenerationPopulator, IPopulatorProvider {
 
+    @Shadow @Final private net.minecraft.world.World worldObj;
     @Shadow @Final private boolean field_177466_i;
     @Shadow @Final public Random hellRNG;
     @Shadow @Final private MapGenNetherBridge genNetherBridge;
@@ -65,6 +72,8 @@ public abstract class MixinChunkProviderHell implements IChunkProvider, Generati
         if (this.field_177466_i) {
             generator.getGenerationPopulators().add((GenerationPopulator) this.genNetherBridge);
             generator.getPopulators().add((Populator) this.genNetherBridge);
+            // TODO: Remove once structures are properly implemented
+            this.genNetherBridge.worldObj = this.worldObj;
         }
     }
 
@@ -76,6 +85,13 @@ public abstract class MixinChunkProviderHell implements IChunkProvider, Generati
         this.hellRNG.setSeed((long) x * 341873128712L + (long) z * 132897987541L);
         this.func_180515_a(x, z, chunkprimer);
         this.func_180516_b(x, z, chunkprimer);
+    }
+
+    @Inject(method = "getPossibleCreatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/structure/MapGenNetherBridge;getSpawnList()Ljava/util/List;"))
+    private void onGetPossibleCreatures(CallbackInfoReturnable<List<BiomeGenBase.SpawnListEntry>> callbackInfoReturnable) {
+        if (StaticMixinHelper.gettingSpawnList) {
+            StaticMixinHelper.structureSpawning = true;
+        }
     }
 
 }
